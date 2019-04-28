@@ -163,6 +163,3 @@
          [updated-scores (scores-yahtzee-set score)])
     (player-scores-set player updated-scores)))
 
-
-
-
