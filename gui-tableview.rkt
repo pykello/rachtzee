@@ -2,59 +2,7 @@
 
 (provide table-view%)
 
-(define horizontal-margin 10)
-(define vertical-margin 6)
-(define double-seps `(0 7 9 16 17))
-
-(define text-size-dc (new bitmap-dc% [bitmap (make-object bitmap% 1 1)]))
-
-(define (text-height s)
-  (define-values (width height c d) (send text-size-dc get-text-extent s))
-  (exact-round height))
-
-(define (text-width s)
-  (define-values (width height c d) (send text-size-dc get-text-extent s))
-  (exact-round width))
-
-(define cell-height
-  (+ (text-height "ABC") (* 2 vertical-margin)))
-
-(define (cell-text c)
-  (if (list? c)
-      (second c)
-      c))
-
-(define (cell-color c)
-  (if (list? c)
-      (first c)
-      "black"))
-
-(define (cell-width c)
-  (+ (text-width (cell-text c)) (* 2 horizontal-margin)))
-
-(define (col-widths table)
-  (define widths
-    (for/list ([row table])
-      (map cell-width row)))
-  (foldl
-   (lambda (a b) (for/list ([i a] [j b]) (exact-round (max i j))))
-   (car widths)
-   widths))
-
-(define (table-height table)
-  (+ 2 (* cell-height (length table))))
-
-(define (table-width table)
-  (+ 1 (apply + (col-widths table))))
-
-(define (x-to-col widths x)
-  (define (aux lst)
-    (cond
-      [(null? lst) -2]
-      [(> (car lst) x) -1]
-      [(+ 1 (aux (cdr lst)))]))
-  (aux (cumulative-sum widths)))
-
+;; tableview widget
 (define table-view%
   (class canvas%
     (init-field callback)
@@ -71,11 +19,12 @@
           0))
     (define/override (on-paint)
       (define dc (get-dc))
-      (draw-scoreboard dc table widths))
+      (draw-table dc table widths))
     (super-new [min-height (table-height table)]
                [min-width (table-width table)])))
 
-(define (draw-scoreboard dc table col-widths)
+;; how to draw the tableview
+(define (draw-table dc table col-widths)
   (define col-offsets (cumulative-sum col-widths))
   (define row-offsets (cumulative-sum (map (const cell-height) table)))
   (define h (table-height table))
@@ -103,6 +52,65 @@
       (send dc draw-text (cell-text cell) x y)))
   )
 
+;; geometry constants
+(define horizontal-margin 10)
+(define vertical-margin 6)
+(define double-seps `(0 7 9 16 17))
+
+;; table dimension functions
+(define (table-height table)
+  (+ 2 (* cell-height (length table))))
+
+(define (table-width table)
+  (+ 1 (apply + (col-widths table))))
+
+(define (col-widths table)
+  (define widths
+    (for/list ([row table])
+      (map cell-width row)))
+  (foldl
+   (lambda (a b) (for/list ([i a] [j b]) (exact-round (max i j))))
+   (car widths)
+   widths))
+
+;; text size functions
+(define text-size-dc (new bitmap-dc% [bitmap (make-object bitmap% 1 1)]))
+
+(define (text-height s)
+  (define-values (width height c d) (send text-size-dc get-text-extent s))
+  (exact-round height))
+
+(define (text-width s)
+  (define-values (width height c d) (send text-size-dc get-text-extent s))
+  (exact-round width))
+
+;; cell related functions
+(define cell-height
+  (+ (text-height "ABC") (* 2 vertical-margin)))
+
+(define (cell-text c)
+  (if (list? c)
+      (second c)
+      c))
+
+(define (cell-color c)
+  (if (list? c)
+      (first c)
+      "black"))
+
+(define (cell-width c)
+  (+ (text-width (cell-text c)) (* 2 horizontal-margin)))
+
+;; which column is x at in a table with given column widths?
+(define (x-to-col widths x)
+  (define (aux lst)
+    (cond
+      [(null? lst) -2]
+      [(> (car lst) x) -1]
+      [(+ 1 (aux (cdr lst)))]))
+  (aux (cumulative-sum widths)))
+
+;; cumulative sum of given list
 (define (cumulative-sum lst)
   (define (cumulative-sum-rec lst agg)
     (if (null? lst)
