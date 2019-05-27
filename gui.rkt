@@ -6,27 +6,25 @@
 
 (define players (list (player-init) (player-init)))
 
-(define (score-table players) 1
-  )
+(define (player-score-table p)
+  (define s (player-scores p))
+  (map ~v
+       (append `("P")
+               (scores-upper-section s)
+               (list 0 0)
+               (scores-lower-section s)
+               (list (scores-yahtzee s))
+               (list 0))))
 
-(define example-table
-  `(("" "You" "Bill")
-    ("Ones" "" "")
-    ("Twos" "" "")
-    ("Threes" "" "")
-    ("Fours" "" "")
-    ("Fives" "" "")
-    ("Sixes" "" "")
-    ("Sum" "" "")
-    ("Bonus" "" "")
-    ("Three of a kind" "" "")
-    ("Four of a kind" "" "40")
-    ("Full House" "" ("red" "25"))
-    ("Small Straight" "" "")
-    ("Large Straight" "" "")
-    ("Chance" "" "")
-    ("YAHTZEE" "" "")
-    ("TOTAL SCORE" "" "")))
+(define (score-table players)
+  (transpose
+   (append `(("", "Ones", "Twos", "Threes", "Fours", "Fives", "Sixes", "Sum", "Bonus",
+                 "Three of a kind", "Four of a kind", "Full House", "Small Straight",
+                 "Large Straight", "Chance", "YAHTZEE", "TOTAL SCORE"))
+           (map player-score-table players))))
+
+(define (transpose xss)
+  (apply map list xss))
 
 (define application-frame (new frame% [label "Rachtzee"]))
 
@@ -34,7 +32,7 @@
      [parent application-frame]
      [vert-margin 20]
      [horiz-margin 20]
-     [table example-table]
+     [table (score-table players)]
      [callback (lambda (row col) (print col))])
 
 (define dice-pad
