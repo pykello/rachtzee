@@ -2,6 +2,12 @@
 
 (require "gui-tableview.rkt")
 (require "gui-dice.rkt")
+(require "yahtzee.rkt")
+
+(define players (list (player-init) (player-init)))
+
+(define (score-table players) 1
+  )
 
 (define example-table
   `(("" "You" "Bill")
@@ -31,9 +37,11 @@
      [table example-table]
      [callback (lambda (row col) (print col))])
 
-(new dice-pad%
-     [parent application-frame]
-     [dices `((#f . 1) (#f . 2) (#t . 3) (#f . 4) (#f . 5) (#f . 6))]
-     [callback (lambda (dice-idx) (print dice-idx))])
+(define dice-pad
+  (new dice-pad%
+       [parent application-frame]
+       [dices `((#f . 1) (#f . 2) (#t . 3) (#f . 4) (#f . 5))]
+       [callback (lambda (dice-idx)
+                   (set-field! dices dice-pad `((#f . 1) (#f . 2) (#t . 3) (#f . 4) (#t . 3))))]))
 
 (send application-frame show #t)

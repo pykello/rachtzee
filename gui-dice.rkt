@@ -16,6 +16,7 @@
           0))
     (define/override (on-paint)
       (define dc (get-dc))
+      (print "on-paint")
       (for ([dice dices]
             [dx (range 2 350 70)])
         (define color (if (car dice) "red" "black"))

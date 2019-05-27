@@ -1,5 +1,10 @@
 #lang racket
 
+(provide
+ player-init
+ (struct-out scores)
+ (struct-out player))
+
 (require struct-update)
 
 ;; unassigned score is #f, otherwise an integer
@@ -101,7 +106,7 @@
          [yahtzee-score       (scores-yahtzee s)])
     (+ lower-section-score upper-section-score bonus-score yahtzee-score)))
 
-(define player-init
+(define (player-init)
   (player scores-init 0 `((#f . 1) (#f . 2) (#f . 3) (#f . 4) (#f . 5) (#f . 6))))
 
 (define (player-toggle-dice player idx)
