@@ -1,9 +1,6 @@
 #lang racket
 
-(provide
- player-init
- (struct-out scores)
- (struct-out player))
+(provide (all-defined-out))
 
 (require struct-update)
 
@@ -87,7 +84,8 @@
         score-chance))
 
 (struct player
-  (scores  ;; struct scores
+  (name
+   scores  ;; struct scores
    rolls   ;; integer. number of rolls done this round.
    dices)) ;; list of 6 (fixed: boolean, score:integer) pairs
 (define-struct-updaters player)
@@ -99,15 +97,22 @@
 (define (list-total-score lst)
   (apply + (remq* `(#f) lst)))
 
+(define (scores-bonus s)
+  (let* ([upper-section-score (list-total-score (scores-upper-section s))])
+    (if (>= upper-section-score 63) 35 0)))
+
+(define (scores-upper-section-total s)
+  (list-total-score (scores-upper-section s)))
+
 (define (scores-total-score s)
   (let* ([lower-section-score (list-total-score (scores-lower-section s))]
-         [upper-section-score (list-total-score (scores-upper-section s))]
-         [bonus-score         (if (>= lower-section-score 63) 35 0)]
-         [yahtzee-score       (scores-yahtzee s)])
+         [upper-section-score (scores-upper-section-total s)]
+         [bonus-score         (scores-bonus s)]
+         [yahtzee-score       (list-total-score (list (scores-yahtzee s)))])
     (+ lower-section-score upper-section-score bonus-score yahtzee-score)))
 
-(define (player-init)
-  (player scores-init 0 `((#f . 1) (#f . 2) (#f . 3) (#f . 4) (#f . 5) (#f . 6))))
+(define (player-init name)
+  (player name scores-init 0 `((#f . 1) (#f . 2) (#f . 3) (#f . 4) (#f . 5) (#f . 6))))
 
 (define (player-toggle-dice player idx)
   (let* ([dices         (player-dices player)]
